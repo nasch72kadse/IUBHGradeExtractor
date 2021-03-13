@@ -1,0 +1,5 @@
+---
+# Connection configuration
+username: vorname.nachname
+password: passsword
+telegram_token: 123456789
