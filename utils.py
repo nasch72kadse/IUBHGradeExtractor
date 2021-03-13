@@ -1,9 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import yaml
-import re
-from datetime import datetime, timedelta
-from collections import Counter
-import pandas as pd
 from connection import GradeConnection
+from selenium import webdriver
+import time
+import os
+import pandas as pd
+import sqlite3
+
+# Init variables
+base_url = 'https://care-fs.iubh.de/de/#'
+grade_url = "https://care-fs.iubh.de/de/pruefungen-im-fernstudium/notenuebersicht.php"
+webpage_file = "page.html"
 
 
 def parse_yaml(yaml_file):
@@ -27,3 +35,66 @@ def create_connection_object(yaml_object):
         yaml_object['telegram_token']
     )
     return con
+
+
+def get_current_grade_page(connection_object: GradeConnection):
+    browser = webdriver.Chrome()
+    browser.get(base_url)
+
+    # Set xpath
+    login_button_xpath = "/html/body/div[2]/nav/div/div[2]/button"
+    username_xpath = "/html/body/div[2]/div[2]/div[1]/div/div[3]/div/div/div[2]/div[2]/div[2]/form/div[1]/div/input"
+    password_xpath = "/html/body/div[2]/div[2]/div[1]/div/div[3]/div/div/div[2]/div[2]/div[2]/form/div[2]/div/input"
+    submit_button_xpath = "/html/body/div[2]/div[2]/div[1]/div/div[3]/div/div/div[2]/div[2]/div[2]/form/div[4]/div/button"
+
+    # Click login
+    login_button = browser.find_element_by_xpath(login_button_xpath)
+    login_button.click()
+    time.sleep(2)
+
+    # Get input elements
+    username_element = browser.find_element_by_xpath(username_xpath)
+    password_element = browser.find_element_by_xpath(password_xpath)
+
+    # Send login data
+    username_element.send_keys(connection_object.username)
+    password_element.send_keys(connection_object.password)
+
+    # Click submit
+    submit_button = browser.find_element_by_xpath(submit_button_xpath)
+    submit_button.click()
+
+    # Load grade overview
+    browser.get(grade_url)
+
+    # Download html page
+    content = browser.page_source
+    return content
+
+
+def content_changed(new_content):
+    content_has_changed = False
+    if os.path.isfile(webpage_file):
+        with open(webpage_file, "r", encoding='utf8') as f:
+            data = f.read()
+            # Convert html tables to dataframes
+            old_tables_dataframe = get_iubh_grade_table_dataframes(data)
+            new_tables_dataframe = get_iubh_grade_table_dataframes(new_content)
+            for index, element in enumerate(old_tables_dataframe):
+                if element.equals(new_tables_dataframe[index]):
+                    pass
+                else:
+                    content_has_changed = True
+    # In every case, (over)write the file with the new content
+    with open(webpage_file, "w", encoding='utf8') as html_file:
+        html_file.write(new_content)
+    return content_has_changed
+
+
+def get_iubh_grade_table_dataframes(content_as_html):
+    dataframe_list = pd.read_html(content_as_html)
+    return dataframe_list
+
+
+def connect_to_database():
+    pass
