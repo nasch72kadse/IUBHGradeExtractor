@@ -130,6 +130,9 @@ dmypy.json
 
 .idea/
 
+# Configuration files
 config/config.yaml
 
+# Production files
 *.html
+*.db
