@@ -28,15 +28,12 @@ def parse_yaml(yaml_file):
             return False
 
 
-def create_connection_object(yaml_object):
-    con = GradeConnection(
-        yaml_object['username'],
-        yaml_object['password'],
-    )
-    return con
-
-
 def get_current_grade_page(chat_id):
+    """
+        Get the content of the grading page as an HTML string
+        :param: chat_id: ID of the chat (user)
+        :return: String with HTML content
+    """
     # Get connection parameters
     connection_object = get_connection_from_chat_id(chat_id)
     if connection_object:
@@ -79,6 +76,7 @@ def get_current_grade_page(chat_id):
 
 def content_changed(new_content):
     content_has_changed = False
+    # ToDo save content with ID
     if os.path.isfile(webpage_file):
         with open(webpage_file, "r", encoding='utf8') as f:
             data = f.read()
@@ -160,12 +158,31 @@ def get_connection_from_chat_id(chat_id):
     connection = connect_to_database()
     cursor = connection.cursor()
     # Execute SQL query
-    username = cursor.execute('SELECT username FROM user WHERE chat_id=?', (str(chat_id),))
-    password = cursor.execute('SELECT password FROM user WHERE chat_id=?', (str(chat_id),))
+    username = cursor.execute('SELECT username FROM user WHERE chat_id=?', (str(chat_id),)).fetchone()
+    password = cursor.execute('SELECT password FROM user WHERE chat_id=?', (str(chat_id),)).fetchone()
     # Close connection
     close_connection_to_database(connection)
     if username and password:
-        grade_connection = GradeConnection(username, password)
+        grade_connection = GradeConnection(username[0], password[0])
         return grade_connection
     else:
         return None
+
+
+def get_all_registered_users():
+    """
+    Get all chat_ids from users that are registered
+    :return: List of chat_ids
+    """
+    new_user_list = []
+    # Create connection
+    connection = connect_to_database()
+    cursor = connection.cursor()
+    # Execute SQL query
+    cursor.execute('SELECT chat_id FROM user WHERE state=?', ('registered',))
+    user_list = cursor.fetchall()
+    for registered_user in user_list:
+        new_user_list.append(registered_user[0])
+    # Close connection
+    close_connection_to_database(connection)
+    return new_user_list

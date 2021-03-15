@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from utils import parse_yaml, get_user_state_from_database, get_current_grade_page, content_changed, create_user_in_database, set_user_password_to_database, set_user_name_to_database
+from utils import parse_yaml, get_user_state_from_database, get_current_grade_page, content_changed, \
+    create_user_in_database, set_user_password_to_database, set_user_name_to_database, get_all_registered_users
+from RepeatedFunction import RepeatedFunction
 import telebot
-from threading import Thread
 
 # Init variables
 yaml_path = "config/config.yaml"
@@ -10,6 +11,15 @@ yaml_path = "config/config.yaml"
 # Initialize base objects
 yaml_object = parse_yaml(yaml_path)
 bot = telebot.TeleBot(yaml_object['telegram_token'])
+
+
+def send_update():
+    user_list = get_all_registered_users()
+    for chat_id in user_list:
+        grade_page = get_current_grade_page(chat_id)
+        content_has_changed = content_changed(grade_page)
+        if content_has_changed:
+            bot.send_message(chat_id, "New grades are online!")
 
 
 @bot.message_handler(commands=['start', 'help'])
@@ -53,9 +63,7 @@ def echo_all(message):
         pass
 
 
+# Call the function every 30 minutes
+grade_checker = RepeatedFunction(1800, send_update)
+
 bot.polling()
-
-
-
-
-
