@@ -11,3 +11,5 @@ The chromedriver is currently using version 88, if you are using a different ver
 
 - selenium
 - pyTelegramBotAPI
+- tabulate
+- matplotlib

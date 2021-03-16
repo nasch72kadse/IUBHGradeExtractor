@@ -7,6 +7,9 @@ import time
 import os
 import pandas as pd
 import sqlite3
+import numpy as np
+import matplotlib.pyplot as plt
+import uuid
 
 # Init variables
 base_url = 'https://care-fs.iubh.de/de/#'
@@ -74,11 +77,10 @@ def get_current_grade_page(chat_id):
         return None
 
 
-def content_changed(new_content):
+def content_changed(new_content, chat_id):
     content_has_changed = False
-    # ToDo save content with ID
-    if os.path.isfile(webpage_file):
-        with open(webpage_file, "r", encoding='utf8') as f:
+    if os.path.isfile(str(chat_id) + "_" + webpage_file):
+        with open(str(chat_id) + "_" + webpage_file, "r", encoding='utf8') as f:
             data = f.read()
             # Convert html tables to dataframes
             old_tables_dataframe = get_iubh_grade_table_dataframes(data)
@@ -89,7 +91,7 @@ def content_changed(new_content):
                 else:
                     content_has_changed = True
     # In every case, (over)write the file with the new content
-    with open(webpage_file, "w", encoding='utf8') as html_file:
+    with open(str(chat_id) + "_" + webpage_file, "w", encoding='utf8') as html_file:
         html_file.write(new_content)
     return content_has_changed
 
@@ -186,3 +188,53 @@ def get_all_registered_users():
     # Close connection
     close_connection_to_database(connection)
     return new_user_list
+
+
+def get_current_grades_as_images(html_page):
+    dataframe_list = get_iubh_grade_table_dataframes(html_page)
+    filtered_dataframe_list = filter_grade_dataframes(dataframe_list)
+    image_file_list = get_image_files(filtered_dataframe_list)
+    return image_file_list
+
+
+def filter_grade_dataframes(unfiltered_dataframe_list):
+    filtered_dataframe_list = []
+    for dataframe in unfiltered_dataframe_list:
+        # Only include actual grade tables and tables that have at least one grade
+        if "Modul / Lehrveranstaltung" in dataframe.columns and len(dataframe.Bewertung.value_counts()) > 0:
+            new_dataframe = dataframe[["Modul / Lehrveranstaltung", "Note", "Bewertung", "Credits", "Datum"]].copy()
+            filtered_dataframe_list.append(new_dataframe)
+    return filtered_dataframe_list
+
+
+def get_image_files(grade_dataframes):
+    image_name_list = []
+    for dataframe in grade_dataframes:
+        image_id = str(uuid.uuid4()) + ".png"
+        # Plot table and save
+        fig = render_mpl_table(dataframe)
+        fig.savefig(image_id)
+        image_name_list.append(image_id)
+    return image_name_list
+
+
+def render_mpl_table(data, col_width=4.0, row_height=0.625, font_size=14,
+                     header_color='#40466e', row_colors=['#f1f1f2', 'w'], edge_color='w',
+                     bbox=[0, 0, 1, 1], header_columns=0,
+                     ax=None, **kwargs):
+    if ax is None:
+        size = (np.array(data.shape[::-1]) + np.array([0, 1])) * np.array([col_width, row_height])
+        fig, ax = plt.subplots(figsize=size)
+        ax.axis('off')
+    mpl_table = ax.table(cellText=data.values, bbox=bbox, colLabels=data.columns, **kwargs)
+    mpl_table.auto_set_font_size(False)
+    mpl_table.set_fontsize(font_size)
+
+    for k, cell in mpl_table._cells.items():
+        cell.set_edgecolor(edge_color)
+        if k[0] == 0 or k[1] < header_columns:
+            cell.set_text_props(weight='bold', color='w')
+            cell.set_facecolor(header_color)
+        else:
+            cell.set_facecolor(row_colors[k[0] % len(row_colors)])
+    return ax.get_figure()
