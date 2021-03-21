@@ -238,3 +238,19 @@ def render_mpl_table(data, col_width=4.0, row_height=0.625, font_size=14,
         else:
             cell.set_facecolor(row_colors[k[0] % len(row_colors)])
     return ax.get_figure()
+
+
+def init_sqlite_table(database_name):
+    # Create connection
+    connection = sqlite3.connect(database_name)
+    cursor = connection.cursor()
+    # Execute SQL query
+    sql = "CREATE TABLE user(" \
+          "chat_id INTEGER PRIMARY KEY, " \
+          "username TEXT, " \
+          "password TEXT, " \
+          "state TEXT)"
+    cursor.execute(sql)
+    connection.commit()
+    # Close connection
+    connection.close()

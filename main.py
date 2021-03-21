@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from utils import parse_yaml, get_user_state_from_database, get_current_grade_page, content_changed, \
     create_user_in_database, set_user_password_to_database, set_user_name_to_database, get_all_registered_users, \
-    get_current_grades_as_images
+    get_current_grades_as_images, init_sqlite_table
 from RepeatedFunction import RepeatedFunction
 import telebot
 import os
@@ -29,6 +29,9 @@ def send_welcome(message):
     bot.reply_to(message, "Hello! Use /enterdata to enter your user information \n "
                           "You will receive a notification when your grade table changes. \n"
                           "You can also use /newgrades to receive your grade table and /getgrades to check for new grades manually.")
+    # Initialize DB if it does not exist yet
+    if not os.path.isfile("login_data.db"):
+        init_sqlite_table("login_data.db")
 
 
 @bot.message_handler(commands=['enterdata'])
