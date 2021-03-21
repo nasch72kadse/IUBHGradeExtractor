@@ -26,7 +26,9 @@ def send_update():
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    bot.reply_to(message, "Hello! Use /enterdata to enter your user information")
+    bot.reply_to(message, "Hello! Use /enterdata to enter your user information \n "
+                          "You will receive a notification when your grade table changes. \n"
+                          "You can also use /newgrades to receive your grade table and /getgrades to check for new grades manually.")
 
 
 @bot.message_handler(commands=['enterdata'])
