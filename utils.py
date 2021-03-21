@@ -43,8 +43,8 @@ def get_current_grade_page(chat_id):
     if connection_object:
         # Initialize browser
         chrome_options = Options()
-        chrome_options.addArguments("--no-sandbox");
-        chrome_options.addArguments("--disable-dev-shm-usage")
+        chrome_options.add_argument("--no-sandbox");
+        chrome_options.add_argument("--disable-dev-shm-usage")
         browser = webdriver.Chrome(chrome_options=chrome_options)
 
         browser.get(base_url)
