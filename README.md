@@ -13,3 +13,4 @@ The chromedriver is currently using version 88, if you are using a different ver
 - pyTelegramBotAPI
 - tabulate
 - matplotlib
+- pandas
