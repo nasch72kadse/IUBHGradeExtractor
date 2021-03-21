@@ -61,7 +61,10 @@ def get_grades(message):
     chat_id = message.chat.id
     bot.send_message(chat_id, "Gathering data...")
     grade_page = get_current_grade_page(chat_id)
-    image_path_list = get_current_grades_as_images(grade_page)
+    try:
+        image_path_list = get_current_grades_as_images(grade_page)
+    except ValueError:
+        bot.send_message(chat_id, "The grade table could not be reached with your login data")
     if image_path_list:
         for image_path in image_path_list:
             with open(image_path, 'rb') as photo:

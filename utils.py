@@ -10,7 +10,10 @@ import sqlite3
 import numpy as np
 import matplotlib.pyplot as plt
 import uuid
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 # Init variables
 base_url = 'https://care-fs.iubh.de/de/#'
@@ -43,8 +46,9 @@ def get_current_grade_page(chat_id):
     if connection_object:
         # Initialize browser
         chrome_options = Options()
-        chrome_options.add_argument("--no-sandbox");
+        chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--headless")
         browser = webdriver.Chrome(chrome_options=chrome_options)
 
         browser.get(base_url)
@@ -58,10 +62,9 @@ def get_current_grade_page(chat_id):
         # Click login
         login_button = browser.find_element_by_xpath(login_button_xpath)
         login_button.click()
-        time.sleep(2)
 
         # Get input elements
-        username_element = browser.find_element_by_xpath(username_xpath)
+        username_element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, username_xpath)))
         password_element = browser.find_element_by_xpath(password_xpath)
 
         # Send login data
