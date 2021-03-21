@@ -49,6 +49,7 @@ def get_current_grade_page(chat_id):
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--window-size=1920,1080")
         browser = webdriver.Chrome(chrome_options=chrome_options)
 
         browser.get(base_url)
@@ -64,7 +65,7 @@ def get_current_grade_page(chat_id):
         login_button.click()
 
         # Get input elements
-        username_element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, username_xpath)))
+        username_element = WebDriverWait(browser, 30).until(EC.presence_of_element_located((By.XPATH, username_xpath)))
         password_element = browser.find_element_by_xpath(password_xpath)
 
         # Send login data
