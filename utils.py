@@ -41,7 +41,7 @@ def get_current_grade_page(chat_id):
     connection_object = get_connection_from_chat_id(chat_id)
     if connection_object:
         # Initialize browser
-        browser = webdriver.Chrome()
+        browser = webdriver.Chrome("chromedriver")
         browser.get(base_url)
 
         # Set xpath
