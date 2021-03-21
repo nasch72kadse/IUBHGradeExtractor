@@ -15,3 +15,4 @@ The chromedriver is currently using version 88, if you are using a different ver
 - matplotlib
 - pandas
 - lxml
+- beautifulsoup4
