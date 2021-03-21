@@ -10,6 +10,7 @@ import sqlite3
 import numpy as np
 import matplotlib.pyplot as plt
 import uuid
+from selenium.webdriver.chrome.options import Options
 
 # Init variables
 base_url = 'https://care-fs.iubh.de/de/#'
@@ -41,7 +42,11 @@ def get_current_grade_page(chat_id):
     connection_object = get_connection_from_chat_id(chat_id)
     if connection_object:
         # Initialize browser
-        browser = webdriver.Chrome("chromedriver")
+        chrome_options = Options()
+        chrome_options.addArguments("--no-sandbox");
+        chrome_options.addArguments("--disable-dev-shm-usage")
+        browser = webdriver.Chrome(chrome_options=chrome_options)
+
         browser.get(base_url)
 
         # Set xpath
