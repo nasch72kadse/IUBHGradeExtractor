@@ -14,3 +14,4 @@ The chromedriver is currently using version 88, if you are using a different ver
 - tabulate
 - matplotlib
 - pandas
+- lxml
